@@ -281,37 +281,69 @@ while reading:
             down = False
 
 def binary_to_num(bin):
-    if len(bin) != 8:
-        return "NUL"
     num = 0
-    for i in range(8):
-        if bin[7-i] == "1":
+    for i in range(len(bin)):
+        if bin[(len(bin)-1)-i] == "1":
             num += 2**i
         else:
             pass
     return num
 
 # Now, decode data from binary to actual characters
-length = data[0:8]
-#length = length[::-1]
-size = binary_to_num(length)
-print(len(data)/8, "stuff", size, length)
+if encodings[encoding] == "byte":
+    length = data[0:8]
+    #length = length[::-1]
+    size = binary_to_num(length)
+    print(len(data)/8, "stuff", size, length)
+else:
+    length = data[0:10]
+    size = binary_to_num(length)
+    print(size, length)
 
 codes = []
 
 string = ""
 
-start = 8
-for i in range(size):
-    byte = data[start:(start+8)]
-    print(byte)
-    codes.append(binary_to_num(byte))
-    start += 8
+if  encodings[encoding] == "byte":
+    start = 8
+    for i in range(size):
+        byte = data[start:(start+8)]
+        codes.append(binary_to_num(byte))
+        start += 8
+if encodings[encoding] == "numeric":
+    # 3 digit numbers(made of 10 bits)
+    digits = size/3
+    print(digits)
+    start = 10
 
-for code in codes:
-    #print(str(code))
-    if str(code) in ascii_table:
-        string += ascii_table[str(code)]
+    for i in range(int(digits)):
+        bits = data[start:(start+10)]
+        digit = binary_to_num(bits)
+        if digit < 100:
+            string += "0"
+            if digit < 10:
+                string += "0"
+        string += str(digit)
+        start += 10
+    
+    if 0.5 < (digits-int(digits)) * 3 < 1:
+        digits = 1
+    else:
+        digits = round( (digits-int(digits)) * 3)
+
+    for i in range(1):
+        if digits == 1:
+            bits = data[start:(start+4)]
+            string += str(binary_to_num(bits))
+        if digits == 2:
+            bits = data[start:(start+7)]
+            string += str(binary_to_num(bits))
+            break
+
+if encodings[encoding] == "byte":
+    for code in codes:
+        if str(code) in ascii_table:
+            string += ascii_table[str(code)]
 
 print(string)
 
